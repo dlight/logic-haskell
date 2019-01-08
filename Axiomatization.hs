@@ -72,7 +72,7 @@ ka = ("+&", fromRight M.empty kaTruthTable)
 ki = (">&", fromRight M.empty kiTruthTable)
 ad = ("+-", fromRight M.empty adTruthTable)
 
-connectives = [implies, negation, and, or, ka, ki, ad]
+connectives = [zero, one, implies, negation, and, or, ka, ki, ad]
 
 getDefaultConnective :: [(String, TruthTable Int)]
 getDefaultConnective = connectives
