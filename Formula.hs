@@ -35,15 +35,15 @@ instance Read Formula where
                     +++
                     do
                         prec app_prec $ do
-                            Ident i <- lexP
                             do
-                                do
-                                    Punc "(" <- lexP
-                                    Punc ")" <- lexP
-                                    return $ Op i []
-                                +++
-                                do
-                                    return $ Var i
+                                Symbol op <- lexP
+                                Punc "(" <- lexP
+                                Punc ")" <- lexP
+                                return $ Op op []
+                            +++
+                            do
+                                Ident i <- lexP
+                                return $ Var i
                 where   app_prec = 10
                         up_prec = 5
     readListPrec = do
