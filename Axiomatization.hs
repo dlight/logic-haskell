@@ -61,6 +61,15 @@ adTruthTable = mkTruthTable [([0, 0, 0], 0),
                              ([1, 1, 0], 1),
                              ([1, 1, 1], 1)] :: Either SomeException (TruthTable Int)
 
+akTruthTable = mkTruthTable [([0, 0, 0], 0),
+                             ([0, 0, 1], 0),
+                             ([0, 1, 0], 0),
+                             ([0, 1, 1], 1),
+                             ([1, 0, 0], 1),
+                             ([1, 0, 1], 1),
+                             ([1, 1, 0], 1),
+                             ([1, 1, 1], 1)] :: Either SomeException (TruthTable Int)
+
 xorTruthTable = mkTruthTable [([0, 0, 0], 0),
                               ([0, 0, 1], 1),
                               ([0, 1, 0], 1),
@@ -88,6 +97,7 @@ or = ("+", fromRight M.empty orTruthTable)
 ka = ("+*", fromRight M.empty kaTruthTable)
 ki = (">*", fromRight M.empty kiTruthTable)
 ad = ("+-", fromRight M.empty adTruthTable)
+ak = ("*+", fromRight M.empty adTruthTable)
 xor = ("#", fromRight M.empty xorTruthTable)
 d = (">", fromRight M.empty dTruthTable)
 
@@ -188,6 +198,33 @@ f1_25 = read "{+-(S, +-(+-(R, A, P), +-(R, P, Q), +-(R, A, Q)), S)} | +-(S, +-(+
 f1Axiomatization = [f1_1, f1_2, f1_3, f1_4, f1_5, f1_6, f1_7, f1_8, f1_9, f1_10, f1_11, f1_12, f1_13, f1_14, f1_15, f1_16, f1_17, f1_18, f1_19, f1_20, f1_21, f1_22, f1_23, f1_24, f1_25]
 f1Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList f1Axiomatization)
 
+-- F_4^\inf Axiomatization - 2(ad, 1)
+
+f4_1 = read "{} | .()" :: Consequence
+
+f4Axiomatization = f1Axiomatization ++ [f4_1]
+f4Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList f4Axiomatization)
+
+-- F_2^\inf Axiomatization - 2(ak)
+
+f2_1 = read "{P} | *+(Q, P, P)" :: Consequence
+f2_2 = read "{*+(P, P, P)} | P" :: Consequence
+f2_3 = read "{*+(Q, P, P)} | *+(P, Q, Q)" :: Consequence
+f2_4 = read "{*+(*+(R, Q, Q), P, P)} | *+(R, *+(Q, P, P), *+(Q, P, P))" :: Consequence
+f2_5 = read "{*+(*+(R, P, P), S, S), *+(*+(R, Q, Q), S, S)} | *+(*+(R, P, Q), S, S)" :: Consequence
+f2_6 = read "{*+(*+(R, P, Q), S, S)} | *+(*+(R, P, P), S, S)" :: Consequence
+f2_7 = read "{*+(*+(R, P, Q), S, S)} | *+(*+(R, Q, Q), S, S)" :: Consequence
+
+f2Axiomatization = [f2_1, f2_2, f2_3, f2_4, f2_5, f2_6, f2_7]
+f2Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList f2Axiomatization)
+
+-- F_3^\inf Axiomatization - 2(ak, 1)
+
+f3_8 = read "{} | .()" :: Consequence
+
+f3Axiomatization = f2Axiomatization ++ [f3_8]
+f3Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList f3Axiomatization)
+
 -- L_4 Axiomatization - 2(+_3)
 
 l4_1 = read "{P, Q, R} | #(P, Q, R)" :: Consequence
@@ -230,8 +267,6 @@ l5Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList l5Axiomati
 l1Axiomatization = l4Axiomatization ++ [l2_7, l3_7]
 l1Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList l1Axiomatization)
 
--- TODO: F_i^\inf 2 \leq i \leq 4
-
 -- TODO: Implement!
 getAxiomatization :: Signature -> [Consequence]
 getAxiomatization signature
@@ -242,6 +277,9 @@ getAxiomatization signature
     | signature == f7Signature = f7Axiomatization -- 2(ka,0)
     | signature == f8Signature = f8Axiomatization -- 2(ki,0)
     | signature == f1Signature = f1Axiomatization -- 2(ad)
+    | signature == f4Signature = f4Axiomatization -- 2(ad,1)
+    | signature == f2Signature = f2Axiomatization -- 2(ak)
+    | signature == f3Signature = f3Axiomatization -- 2(ak,1)
     | signature == l4Signature = l4Axiomatization -- 2(+_3)
     | signature == l2Signature = l2Axiomatization -- 2(+_3,1)
     | signature == l3Signature = l3Axiomatization -- 2(+_3,1)
