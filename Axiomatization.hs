@@ -134,9 +134,15 @@ p2_1 = read "{P, Q} | *(P, Q)" :: Consequence
 p2_2 = read "{*(P, Q)} | P" :: Consequence
 p2_3 = read "{*(P, Q)} | Q" :: Consequence
 p2Axiomatization = [p2_1, p2_2, p2_3]
+p2Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList p2Axiomatization)
 
 -- P4 Axiomatization - 2(^, 0)
+
 -- P5 Axiomatization - 2(^, 1)
+p5_0 = read "{} | .()" :: Consequence
+p5Axiomatization = p5_0 : p2Axiomatization
+p5Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList p5Axiomatization)
+
 -- P6 Axiomatization - 2(^, 0, 1)
 
 -- A4 Axiomatization - 2(v,^)
