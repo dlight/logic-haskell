@@ -159,7 +159,7 @@ a4Axiomatization = s2Axiomatization ++ [a4_5, a4_6, a4_7]
 a4Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList a4Axiomatization)
 
 -- A2 Axiomatization - 2(v, ^, 1)
-a2_0 = read "{} | /()" :: Consequence
+a2_0 = read "{} | .()" :: Consequence
 a2Axiomatization = a2_0 : a4Axiomatization
 a2Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList a2Axiomatization)
 
@@ -169,7 +169,7 @@ a3Axiomatization = a3_0 : a4Axiomatization
 a3Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList a3Axiomatization)
 
 -- A1 Axiomatization - 2(v, ^, 0, 1)
-a1_0 = read "{} | /()" :: Consequence
+a1_0 = read "{} | .()" :: Consequence
 a1Axiomatization = a1_0 : a3Axiomatization
 a1Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList a1Axiomatization)
 
