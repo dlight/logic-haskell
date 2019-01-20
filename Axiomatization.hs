@@ -107,7 +107,6 @@ getDefaultConnective :: [(String, TruthTable Int)]
 getDefaultConnective = connectives
 
 -- S2 Axiomatization - 2(v)
-
 s2_1 = read "{P} | +(P, Q)" :: Consequence
 s2_2 = read "{+(P, P)} | P" :: Consequence
 s2_3 = read "{+(P, Q)} | +(Q, P)" :: Consequence
@@ -116,19 +115,41 @@ s2Axiomatization = [s2_1, s2_2, s2_3, s2_4]
 s2Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList s2Axiomatization)
 
 -- S4 Axiomatization - 2(v, 1)
-s4_0 = read "{} | /()" :: Consequence
+s4_0 = read "{} | .()" :: Consequence
 s4Axiomatization = s4_0 : s2Axiomatization
 s4Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList s4Axiomatization)
 
 -- S5 Axiomatization - 2(v, 0)
-s5_0 = read "{+(P, .())} | P" :: Consequence
+s5_0 = read "{+(P, /())} | P" :: Consequence
 s5Axiomatization = s5_0 : s2Axiomatization
 s5Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList s5Axiomatization)
 
 -- S6 Axiomatization - 2(v, 0, 1)
-s6_0 = read "{} | /()" :: Consequence
+s6_0 = read "{} | .()" :: Consequence
 s6Axiomatization = s6_0 : s5Axiomatization
 s6Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList s6Axiomatization)
+
+-- P2 Axiomatization - 2(^)
+p2_1 = read "{P, Q} | *(P, Q)" :: Consequence
+p2_2 = read "{*(P, Q)} | P" :: Consequence
+p2_3 = read "{*(P, Q)} | Q" :: Consequence
+p2Axiomatization = [p2_1, p2_2, p2_3]
+p2Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList p2Axiomatization)
+
+-- P4 Axiomatization - 2(^, 0)
+p4_0 = read "{} | /()" :: Consequence -- TODO
+p4Axiomatization = p4_0 : p2Axiomatization
+p4Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList p4Axiomatization)
+
+-- P5 Axiomatization - 2(^, 1)
+p5_0 = read "{} | .()" :: Consequence
+p5Axiomatization = p5_0 : p2Axiomatization
+p5Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList p5Axiomatization)
+
+-- P6 Axiomatization - 2(^, 0, 1)
+p6_0 = read "{} | .()" :: Consequence
+p6Axiomatization = p6_0 : p4Axiomatization
+p6Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList p6Axiomatization)
 
 -- A4 Axiomatization - 2(v, ^)
 a4_5 = read "{+(R, P), +(R, Q)} | +(R, *(P, Q))" :: Consequence
