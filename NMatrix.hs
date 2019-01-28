@@ -37,7 +37,8 @@ data InterpretationException =
     MultipleDefinition String |
     MissingInterpretations Signature |
     ExcessInterpretations |
-    InvalidCompositionArgsNumber Int
+    InvalidSuperpositionArgsNumber Int |
+    IncompatibleSuperpositionArities
     deriving (Show, Eq)
 
 instance Exception InterpretationException
@@ -90,15 +91,20 @@ truthTableArity :: (Show a, Ord a) => TruthTable a -> Int
 truthTableArity tt = length firstArgEntry
     where (firstArgEntry, _) = head $ M.toList tt
 
-compose :: forall a m. (MonadThrow m, Show a, Ord a) => TruthTable a -> [TruthTable a] -> m (TruthTable a)
-compose f gs 
-    | outerArity /= length gs = throwM $ InvalidCompositionArgsNumber outerArity
+-- | Superposition or multiple finitary composition
+-- Given f, arity m, and g1,g2,...,gm, all arity n, call 
+-- h(x1,x2,...,xn) = f(g1(x1,x2,...,xn),...,gm(x1,x2,...,xn)) a superposition.
+superpose :: forall a m. (MonadThrow m, Show a, Ord a) => TruthTable a -> [TruthTable a] -> m (TruthTable a)
+superpose f gs 
+    | outerArity == 0 = return f -- when f is 0-ary
+    | outerArity /= length gs = throwM $ InvalidSuperpositionArgsNumber outerArity -- when f expects more or less
+    | not (null gs) && any (/= head gsArities) gsArities = throwM IncompatibleSuperpositionArities -- when gs are of different arity
     | otherwise = return $ foldr foldFunction M.empty args
         where   outerArity = truthTableArity f
-                innerArity = truthTableArity $ head gs
-                args = S.toList $ M.keysSet $ head gs
+                gsArities = map truthTableArity gs
                 apply x = map (M.! x)
                 foldFunction x = M.insert x ((M.!) f (apply x gs))
+                args = S.toList $ M.keysSet $ head gs
 
 -- | Exceptions regarding NMatrices
 data NMatrixException = InvalidDesignated | 
