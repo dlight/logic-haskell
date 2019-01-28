@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module NMatrix (NMatrix(..), Values, valuesFromLists, Interpretation, mkTruthTable, TruthTable, mkInterpretation, V) where
 
 import qualified Data.Set as S
@@ -35,7 +36,8 @@ data InterpretationException =
     UnknownSymbol String    |
     MultipleDefinition String |
     MissingInterpretations Signature |
-    ExcessInterpretations 
+    ExcessInterpretations |
+    InvalidCompositionArgsNumber Int
     deriving (Show, Eq)
 
 instance Exception InterpretationException
@@ -83,6 +85,20 @@ mkInterpretation sig (c@(_,tt):cs)
                                             return $ M.insert connective tt interp
                                 else 
                                     throwM $ UnknownSymbol $ symbol connective
+
+truthTableArity :: (Show a, Ord a) => TruthTable a -> Int
+truthTableArity tt = length firstArgEntry
+    where (firstArgEntry, _) = head $ M.toList tt
+
+compose :: forall a m. (MonadThrow m, Show a, Ord a) => TruthTable a -> [TruthTable a] -> m (TruthTable a)
+compose f gs 
+    | outerArity /= length gs = throwM $ InvalidCompositionArgsNumber outerArity
+    | otherwise = return $ foldr foldFunction M.empty args
+        where   outerArity = truthTableArity f
+                innerArity = truthTableArity $ head gs
+                args = S.toList $ M.keysSet $ head gs
+                apply x = map (M.! x)
+                foldFunction x = M.insert x ((M.!) f (apply x gs))
 
 -- | Exceptions regarding NMatrices
 data NMatrixException = InvalidDesignated | 
