@@ -125,7 +125,7 @@ r8Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList r8Axiomati
 
 -- R11 Axiomatization - 2(0, 1)
 r11_1 = read "{} | .()" :: Consequence
-r11Axiomatization = r11Axiomatization ++ [r11_1]
+r11Axiomatization = r8Axiomatization ++ [r11_1]
 r11Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList r11Axiomatization)
 
 -- R13 Axiomatization - 2(\lnot, 0)
@@ -367,9 +367,9 @@ getAxiomatization signature
     | signature == s5Signature = s5Axiomatization -- 2(v,0)
     | signature == s6Signature = s6Axiomatization -- 2(v,0,1)
     | signature == p2Signature = p2Axiomatization -- 2(^)
-    | signature == p4Signature = p4Axiomatization -- 2(^,0)
+    -- | signature == p4Signature = p4Axiomatization -- 2(^,0)
     | signature == p5Signature = p5Axiomatization -- 2(^,1)
-    | signature == p6Signature = p6Axiomatization -- 2(^,0,1)
+    -- | signature == p6Signature = p6Axiomatization -- 2(^,0,1)
     | signature == l4Signature = l4Axiomatization -- 2(+_3)
     | signature == l2Signature = l2Axiomatization -- 2(+_3,1)
     | signature == l3Signature = l3Axiomatization -- 2(+_3,0)
@@ -385,6 +385,6 @@ getAxiomatization signature
     | signature == f3Signature = f3Axiomatization -- 2(ak,1)
     | signature == d2Signature = d2Axiomatization -- 2(d)
     | signature == d3Signature = d3Axiomatization -- 2(d,\lnot)
-    | signature == d1Signature = d1Axiomatization -- 2(d,+_3)
+    -- | signature == d1Signature = d1Axiomatization -- 2(d,+_3)
     | signature == a4Signature = a4Axiomatization -- 2(v,^)
     | otherwise                = []
