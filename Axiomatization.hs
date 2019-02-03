@@ -88,7 +88,7 @@ dTruthTable = mkTruthTable [([0, 0, 0], 0),
                             ([1, 1, 0], 1),
                             ([1, 1, 1], 1)] :: Either SomeException (TruthTable Int)
 
-zero = ("/", fromRight M.empty zeroTruthTable)
+zero = ("$", fromRight M.empty zeroTruthTable)
 one = (".", fromRight M.empty oneTruthTable)
 implies = ("==>", fromRight M.empty impliesTruthTable)
 negation = ("-", fromRight M.empty negationTruthTable)
@@ -98,7 +98,7 @@ ka = ("+*", fromRight M.empty kaTruthTable)
 ki = (">*", fromRight M.empty kiTruthTable)
 ad = ("+-", fromRight M.empty adTruthTable)
 ak = ("*+", fromRight M.empty adTruthTable)
-xor = ("#", fromRight M.empty xorTruthTable)
+xor = ("++", fromRight M.empty xorTruthTable)
 d = (">", fromRight M.empty dTruthTable)
 
 connectives = [zero, one, implies, negation, and, or, ka, ki, ad, ak, xor, d]
@@ -119,7 +119,7 @@ r6Axiomatization = [r6_1]
 r6Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList r6Axiomatization)
 
 -- R8 Axiomatization - 2(0)
-r8_1 = read "{/()} | P" :: Consequence
+r8_1 = read "{$()} | P" :: Consequence
 r8Axiomatization = [r8_1]
 r8Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList r8Axiomatization)
 
@@ -129,7 +129,7 @@ r11Axiomatization = r8Axiomatization ++ [r11_1]
 r11Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList r11Axiomatization)
 
 -- R13 Axiomatization - 2(\lnot, 0)
-r13_1 = read "{} | -(/())" :: Consequence
+r13_1 = read "{} | -($())" :: Consequence
 r13Axiomatization = r4Axiomatization ++ [r13_1]
 r13Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList r13Axiomatization)
 
@@ -147,7 +147,7 @@ s4Axiomatization = s4_0 : s2Axiomatization
 s4Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList s4Axiomatization)
 
 -- S5 Axiomatization - 2(v, 0)
-s5_0 = read "{+(P, /())} | P" :: Consequence
+s5_0 = read "{+(P, $())} | P" :: Consequence
 s5Axiomatization = s5_0 : s2Axiomatization
 s5Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList s5Axiomatization)
 
@@ -227,13 +227,13 @@ f5Axiomatization = [f5_1, f5_2, f5_3, f5_4, f5_5, f5_6, f5_7, f5_8, f5_9]
 f5Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList f5Axiomatization)
 
 -- F_7^\inf Axiomatization - 2(ka,0)
-f7_0 = read "{+*(A, P, /())} | +*(A, P, Q)" :: Consequence
+f7_0 = read "{+*(A, P, $())} | +*(A, P, Q)" :: Consequence
 
 f7Axiomatization = f6Axiomatization ++ [f7_0]
 f7Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList f7Axiomatization)
 
 -- F_8^\inf Axiomatization - 2(ki,0)
-f8_0 = read "{>*(A, P, /())} | >*(A, P, Q)" :: Consequence
+f8_0 = read "{>*(A, P, $())} | >*(A, P, Q)" :: Consequence
 
 f8Axiomatization = f5Axiomatization ++ [f8_0]
 f8Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList f8Axiomatization)
@@ -293,12 +293,12 @@ f3Axiomatization = f2Axiomatization ++ [f3_8]
 f3Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList f3Axiomatization)
 
 -- L_4 Axiomatization - 2(+_3)
-l4_1 = read "{P, Q, R} | #(P, Q, R)" :: Consequence
-l4_2 = read "{#(P, Q, R)} | #(Q, P, R)" :: Consequence
-l4_3 = read "{#(P, Q, R)} | #(P, R, Q)" :: Consequence
-l4_4 = read "{P} | #(P, Q, Q)" :: Consequence
-l4_5 = read "{#(P, Q, Q)} | P" :: Consequence
-l4_6 = read "{#(P, Q, #(R, S, T))} | #(#(P, Q, R), S, T)" :: Consequence
+l4_1 = read "{P, Q, R} | ++(P, Q, R)" :: Consequence
+l4_2 = read "{++(P, Q, R)} | ++(Q, P, R)" :: Consequence
+l4_3 = read "{++(P, Q, R)} | ++(P, R, Q)" :: Consequence
+l4_4 = read "{P} | ++(P, Q, Q)" :: Consequence
+l4_5 = read "{++(P, Q, Q)} | P" :: Consequence
+l4_6 = read "{++(P, Q, ++(R, S, T))} | ++(++(P, Q, R), S, T)" :: Consequence
 
 l4Axiomatization = [l4_1, l4_2, l4_3, l4_4, l4_5, l4_6]
 l4Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList l4Axiomatization)
@@ -310,7 +310,7 @@ l2Axiomatization = l4Axiomatization ++ [l2_7]
 l2Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList l2Axiomatization)
 
 -- L_3 Axiomatization - 2(+_3, 0)
-l3_7 = read "{/()} | P" :: Consequence
+l3_7 = read "{$()} | P" :: Consequence
 
 l3Axiomatization = l4Axiomatization ++ [l3_7]
 l3Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList l3Axiomatization)
@@ -319,8 +319,8 @@ l3Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList l3Axiomati
 l5_7 = read "{P, -(P)} | Q" :: Consequence
 l5_8 = read "{P} | -(-(P))" :: Consequence
 l5_9 = read "{-(-(P))} | P" :: Consequence
-l5_10 = read "{-(#(P, Q, R))} | #(-(P), Q, R)" :: Consequence
-l5_11 = read "{#(-(P), Q, R)} | -(#(P, Q, R))" :: Consequence
+l5_10 = read "{-(++(P, Q, R))} | ++(-(P), Q, R)" :: Consequence
+l5_11 = read "{++(-(P), Q, R)} | -(++(P, Q, R))" :: Consequence
 
 l5Axiomatization = l4Axiomatization ++ [l5_7, l5_8, l5_9, l5_10, l5_11]
 l5Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList l5Axiomatization)
