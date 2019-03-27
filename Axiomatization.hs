@@ -164,7 +164,7 @@ p2Axiomatization = [p2_1, p2_2, p2_3]
 p2Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList p2Axiomatization)
 
 -- P4 Axiomatization - 2(^, 0)
-p4_0 = undefined -- TODO
+p4_0 = read "{$()} | P" :: Consequence
 p4Axiomatization = p4_0 : p2Axiomatization
 p4Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList p4Axiomatization)
 
@@ -191,8 +191,7 @@ a2Axiomatization = a2_0 : a4Axiomatization
 a2Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList a2Axiomatization)
 
 -- A3 Axiomatization - 2(v, ^, 0)
-a3_0 = undefined -- TODO
-a3Axiomatization = a3_0 : a4Axiomatization
+a3Axiomatization = p2Axiomatization ++ s5Axiomatization
 a3Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList a3Axiomatization)
 
 -- A1 Axiomatization - 2(v, ^, 0, 1)
@@ -349,9 +348,10 @@ d3Axiomatization = d2Axiomatization ++ [d3_8, d3_9]
 d3Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList d3Axiomatization)
 
 -- D_1 Axiomatization - 2(d, +_3)
-d1_0 = undefined -- TODO
+d1_0 = read "{>(P, Q, ++(R, S, T))} | ++(>(P, Q, R), >(P, Q, S), >(P, Q, T))" :: Consequence
+d1_1 = read "{++(P, Q, >(R, S, T))} | >(++(P, Q, R), ++(P, Q, S), ++(P, Q, T))" :: Consequence
 
-d1Axiomatization = undefined
+d1Axiomatization = d2Axiomatization ++ l4Axiomatization ++ [d1_0, d1_1]
 d1Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList d1Axiomatization)
 
 -- TODO: Implement!
@@ -367,9 +367,9 @@ getAxiomatization signature
     | signature == s5Signature = s5Axiomatization -- 2(v,0)
     | signature == s6Signature = s6Axiomatization -- 2(v,0,1)
     | signature == p2Signature = p2Axiomatization -- 2(^)
-    -- | signature == p4Signature = p4Axiomatization -- 2(^,0)
+    | signature == p4Signature = p4Axiomatization -- 2(^,0)
     | signature == p5Signature = p5Axiomatization -- 2(^,1)
-    -- | signature == p6Signature = p6Axiomatization -- 2(^,0,1)
+    | signature == p6Signature = p6Axiomatization -- 2(^,0,1)
     | signature == l4Signature = l4Axiomatization -- 2(+_3)
     | signature == l2Signature = l2Axiomatization -- 2(+_3,1)
     | signature == l3Signature = l3Axiomatization -- 2(+_3,0)
