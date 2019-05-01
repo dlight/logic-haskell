@@ -6,6 +6,7 @@ import Text.Read
 import Signature
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
+import qualified Data.List as L
 import Control.Exception.Safe (Exception, MonadThrow, throwM, SomeException)
 import Data.Typeable
 import Data.Aeson.Types (ToJSON)
@@ -81,3 +82,18 @@ substituiion v f (Op s fs) = Op s (map (substitution v f) fs)
 translation :: (MonadThrow m) => ([Formula] -> Connective -> Formula) -> Formula -> m Formula
 translation _ f@(Var s) = pure f
 translation t (Op s' fs) = flip t <$> mkConnective (s',(length fs)) <*> mapM (translation t) fs
+
+-- | Given an arity and a list of variables, produce tuples of these variables
+-- to be applied in a connective of that arity
+makeVariablesPermsUpToIso :: Int -> S.Set [String]
+makeVariablesPermsUpToIso originalArity = 
+        S.unions $ makeNonRepeatedPermutations <$> [1..originalArity]
+    where
+        makeNonRepeatedPermutations :: Int -> S.Set [String]
+        makeNonRepeatedPermutations = S.fromList . L.permutations . makeVarSet originalArity
+        makeVarSet :: Int -> Int -> [String]
+        makeVarSet originalArity currentArity = 
+            replicate nrep1 "p1" ++ map (("p"++).show) [2..currentArity]
+                where 
+                    nrep1 = originalArity - currentArity + 1
+                    unrep = originalArity - nrep1    
