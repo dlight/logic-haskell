@@ -166,15 +166,6 @@ generateValuations vars values = foldr f [] (replicateM n values)
     where   n = length vars
             f x xs = M.fromList (zip vars x) : xs
 
--- | Generate truth tables given an arity and a values set
-generateTruthTables :: (Ord a, Show a, MonadThrow m) => Arity -> V a -> m [TruthTable a]
-generateTruthTables arity values = mapM mkTruthTable argsTruthTables
-    where
-        argsTruthTables = Prelude.map (zip args) images
-        args = replicateM arity (S.toList values)
-        images = replicateM k (S.toList values)
-        k = S.size values ^ arity
-
 -- | Generate all NMatrices for a given set of values
 generateNMatrices :: forall a m. (Traversable m, MonadThrow m, Ord a, Show a) => Signature -> Values a -> m [NMatrix a]
 generateNMatrices sigma values = nmatrices
@@ -245,5 +236,13 @@ consequenceValidityByNMatrix conseqrel values =
                                             else 
                                                 return (zs, x:ys)
 
-
-
+-- | Build a truth table for a given derived connective
+truthTableFromDerived :: forall a m. (MonadThrow m, Ord a, Show a, Eq a) => Formula -> NMatrix a -> m (TruthTable a)
+truthTableFromDerived fmla nmatrix = 
+        pure M.fromList <*> (pure zip <*> pure arguments <*> evaluations)
+    where
+        evaluations = mapM (flip (evaluate interpret) fmla) valuations
+        valuations = M.fromList . zip variables <$> arguments
+        variables = S.toList $ stringVarsFromFormula fmla
+        arguments = generateTruthTableArgs (getFormulaArity fmla) ((fst . values) nmatrix)
+        interpret = interpretation nmatrix

@@ -57,3 +57,6 @@ rightIndep = fromRight [] indep
 
 
 indep' = checkIndependence Examples.OrFrag.values (S.fromList consequences) sub :: Either SomeException Bool
+
+ttderived = truthTableFromDerived (read "+(a, +(b, b))") matrix :: Either SomeException (TruthTable Int)
+

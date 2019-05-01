@@ -17,6 +17,12 @@ type Symbol = String
 
 type Variable = String
 
+data FormulaException = 
+    BadBodyForComposition |
+    ConstantHead 
+    deriving (Show, Eq)
+instance Exception FormulaException
+
 -- | A well-formed formula
 -- Example:
 -- ==>(a, ==>(b, a))
@@ -60,9 +66,13 @@ instance Read Formula where
                     +++
                         return [f]
 
-varsFromFormula :: Formula -> [Formula]
-varsFromFormula v@(Var x) = [v]
-varsFromFormula (Op _ fmlas) = foldr (++) [] (map varsFromFormula fmlas)
+stringVarsFromFormula :: Formula -> S.Set Variable
+stringVarsFromFormula (Var x) = S.fromList [x]
+stringVarsFromFormula (Op _ fmlas) = S.unions $ stringVarsFromFormula <$> fmlas
+
+varsFromFormula :: Formula -> S.Set Formula
+varsFromFormula v@(Var x) = S.fromList [v]
+varsFromFormula (Op _ fmlas) = S.unions $ varsFromFormula <$> fmlas
 
 -- | Compute the arity of a formula
 getFormulaArity :: Formula -> Int
@@ -94,7 +104,7 @@ makeVariablesPermsUpToIso originalArity maximumNewArity =
 -- example: makeSubstitutions "+(A,B)" "{["B", "A"],["A","A"]}"
 makeSubstitutions :: (MonadThrow m) => Formula -> S.Set [Formula] -> m [Substitution]
 makeSubstitutions target source = 
-    return $ foldr ((:) . mkSubsFromSets varList) [] source
+    return $ foldr ((:) . mkSubsFromSets (S.toList varList)) [] source
     where
         varList = varsFromFormula target
         mkSubsFromSets :: [Formula] -> [Formula] -> Substitution
@@ -132,5 +142,19 @@ makeDerivedFromProjections fmla maximumProjArity =
         Left e -> throwM e
         Right subs -> 
             return $ flip applySubstitutionLeaves fmla <$> subs
+
+-- | Make multiple finitary composition
+makeFinitaryComposition :: (MonadThrow m) => Formula -> [Formula] -> m Formula
+makeFinitaryComposition headFmla bodyFmlas
+    | headArity == 0 = throwM ConstantHead
+    | headArity /= length bodyFmlas = throwM BadBodyForComposition
+    | otherwise = return $ applySubstitutionLeaves (M.fromList $ zip variables bodyFmlas) headFmla
+        where
+            arityAfter = getFormulaArity $ head bodyFmlas
+            headArity = getFormulaArity headFmla
+            variables = S.toList $ varsFromFormula headFmla
+
+
+
 
 

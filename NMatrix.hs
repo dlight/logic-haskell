@@ -1,13 +1,13 @@
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-module NMatrix (NMatrix(..), Values, valuesFromLists, Interpretation, mkTruthTable, TruthTable, mkInterpretation, V) where
+module NMatrix (NMatrix(..), Values, generateTruthTables, generateTruthTableArgs, valuesFromLists, Interpretation, mkTruthTable, TruthTable, mkInterpretation, V) where
 
 import qualified Data.Set as S
 import qualified Data.Map.Strict as M
 import Control.Exception.Safe (Exception, MonadThrow, throwM, SomeException)
 import Data.Typeable
 import Signature
-import Formula (Symbol, Formula)
+import Formula (Symbol, Formula, getFormulaArity, varsFromFormula, stringVarsFromFormula)
 import Control.Monad
 import Data.Aeson.Types
 import GHC.Generics (Generic)
@@ -123,8 +123,15 @@ valuesFromLists vs ds
             vs' = S.fromList vs
             ds' = S.fromList ds
 
--- | Build an NMatrix for a given derived connective
-truthTableFromDerived :: (MonadThrow m, Ord a, Show a, Eq a) => Formula -> Interpretation a -> m (TruthTable a)
-truthTableFromDerived fmla interp = undefined
+-- | Generate truth tables given an arity and a values set
+generateTruthTables :: (Ord a, Show a, MonadThrow m) => Arity -> V a -> m [TruthTable a]
+generateTruthTables arity values = mapM mkTruthTable argsTruthTables
+    where
+        argsTruthTables = Prelude.map (zip args) images
+        args = replicateM arity (S.toList values)
+        images = replicateM k (S.toList values)
+        k = S.size values ^ arity
 
-
+-- | Generate arguments for a truth table
+generateTruthTableArgs :: forall a m. (Ord a, Show a) => Arity -> V a -> [[a]]
+generateTruthTableArgs k vs = replicateM k (S.toList vs)
