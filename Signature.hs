@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
-module Signature (mkConnective, Signature, Connective, union, unionSignatures, k, symbol, Arity, mkSignatureFromConnectives) where
+module Signature (mkConnective, Signature, union, unionSignatures, k, symbol, Arity, mkSignatureFromConnectives, sigmaVarsFromFormula) where
 
 import Data.Map.Strict (Map, empty, insert, (!?), (!))
 import qualified Data.Set as S
@@ -9,20 +9,18 @@ import Control.Exception.Safe (Exception, MonadThrow, throwM, SomeException)
 import Data.Typeable
 import Data.Aeson.Types
 import GHC.Generics
+import Connective
+import Formula
 
-type Arity = Int
 
 -- | k-place connective
-data Connective = Connective {
-                    symbol :: String,
-                    k :: Arity
-                    } deriving (Show, Typeable, Eq, Ord, Generic, ToJSON, FromJSON, ToJSONKey)
+--data Connective = Connective {
+--                    symbol :: String,
+--                    k :: Arity
+--                    } deriving (Show, Typeable, Eq, Ord, Generic, ToJSON, FromJSON, ToJSONKey)
 
 -- | Signature, a family of k-place connectives
 type Signature = Map Int (S.Set Connective)
-
--- | Variable
-type Variable = String
 
 -- | Errors about connectives
 data ConnectiveException = NegativeArity | ImproperSymbol
@@ -79,3 +77,26 @@ union = M.unionWith S.union
 -- | Union signatures
 unionSignatures :: [Signature] -> Signature
 unionSignatures = foldr union M.empty
+
+translation :: (MonadThrow m) => ([Formula] -> Connective -> Formula) -> Formula -> m Formula
+translation _ f@(Var s) = pure f
+translation t (Op s' fs) = flip t <$> mkConnective (s',(length fs)) <*> mapM (translation t) fs
+
+-- | Extract the signature induced by a formula
+sigmaFromFormula :: (MonadThrow m) => Formula -> m Signature
+sigmaFromFormula f = fst <$> sigmaVarsFromFormula f
+
+-- | Extract the signature induced by a formula
+sigmaVarsFromFormula :: (MonadThrow m) => Formula -> m (Signature, S.Set Variable)
+sigmaVarsFromFormula (Var x) = return (M.empty, S.fromList [x])
+sigmaVarsFromFormula (Op op fs) = 
+    do
+        conn <- mkConnective (op, length fs)
+        (sigmaFromArgs, varsFromArgs) <- foldr f (return (M.empty, S.empty)) fs
+        return (M.unionWith S.union (M.fromList [(length fs, S.fromList [conn])]) sigmaFromArgs, varsFromArgs)
+            where f formula msigma = do
+                                        (sff, vars) <- sigmaVarsFromFormula formula
+                                        (sigma, vars') <- msigma
+                                        return (M.unionWith S.union sigma sff, S.union vars vars')
+
+

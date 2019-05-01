@@ -12,6 +12,7 @@ import Signature
 import Control.Exception.Safe (Exception, MonadThrow, throwM, SomeException)
 import Control.Monad (replicateM, mapM, sequence, liftM, filterM)
 import Control.Monad.Loops
+import Connective
 import qualified Data.List as L
 
 -- | Assign to each variable a value

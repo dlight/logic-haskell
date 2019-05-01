@@ -7,10 +7,11 @@ import qualified Data.Map.Strict as M
 import Control.Exception.Safe (Exception, MonadThrow, throwM, SomeException)
 import Data.Typeable
 import Signature
-import Formula (Symbol)
+import Formula (Symbol, Formula)
 import Control.Monad
 import Data.Aeson.Types
 import GHC.Generics (Generic)
+import Connective
 
 -- | V := Set of truth-values
 type V a = S.Set a
@@ -121,3 +122,9 @@ valuesFromLists vs ds
         where 
             vs' = S.fromList vs
             ds' = S.fromList ds
+
+-- | Build an NMatrix for a given derived connective
+truthTableFromDerived :: (MonadThrow m, Ord a, Show a, Eq a) => Formula -> Interpretation a -> m (TruthTable a)
+truthTableFromDerived fmla interp = undefined
+
+
