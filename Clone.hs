@@ -31,5 +31,15 @@ isInClone_ :: NMatrix Int -> State (CloneGenerationState Int) Bool
 isInClone_ baseB = 
     do
         (fs, fmlas) <- get
+        k <- (pure . biggerArityInterpretation . interpretation) baseB
         -- here goes the magic
         return True
+
+biggerArityInterpretation :: Interpretation a -> Int
+biggerArityInterpretation int 
+    | M.null int = 0
+    | otherwise  = if m < n then n else m
+    where
+        (x, xs) = M.splitAt 1 int
+        n = (length . head . M.elems) x
+        m = biggerArityInterpretation xs
