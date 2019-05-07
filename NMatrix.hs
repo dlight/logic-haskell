@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-module NMatrix (NMatrix(..), Values, generateTruthTables, generateTruthTableArgs, valuesFromLists, Interpretation, mkTruthTable, TruthTable, mkInterpretation, V) where
+module NMatrix (NMatrix(..), Values, generateTruthTables, generateTruthTableArgs, valuesFromLists, Interpretation, mkTruthTable, TruthTable, mkInterpretation, V, generateProjections, truthTableArity, superpose) where
 
 import qualified Data.Set as S
 import qualified Data.Map.Strict as M
@@ -135,3 +135,12 @@ generateTruthTables arity values = mapM mkTruthTable argsTruthTables
 -- | Generate arguments for a truth table
 generateTruthTableArgs :: forall a m. (Ord a, Show a) => Arity -> V a -> [[a]]
 generateTruthTableArgs k vs = replicateM k (S.toList vs)
+
+-- | Generate projections of a given arity
+generateProjections :: forall a m. (MonadThrow m, Ord a, Show a) => Arity -> V a -> m [TruthTable a]
+generateProjections arity vs = mapM ithProjection [0..(arity-1)]
+    where
+        ithProjection :: (MonadThrow m, Ord a, Show a) => Arity -> m (TruthTable a)
+        ithProjection i = mkTruthTable $ zip args (images i)
+        images i = Prelude.map (flip (!!) i) args
+        args = replicateM arity (S.toList vs)
