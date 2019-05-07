@@ -60,3 +60,12 @@ isInClone_ baseB baseA =
 interpretationArities :: (Show a, Ord a) => Interpretation a -> S.Set Int
 interpretationArities int = S.fromList $ map truthTableArity (M.elems int)
 
+-- | Given a base set as initial state A and B another base set of functions over {0,1}, determine
+-- they are term equivalent
+isTermEquivalent baseA baseB = pure (&&) <*> ltr <*> rtl
+    where
+        ltr = isInClone baseA baseB
+        rtl = isInClone baseB baseA
+
+
+
