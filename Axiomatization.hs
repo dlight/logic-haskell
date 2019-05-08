@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Axiomatization (getAxiomatization, getDefaultConnectives) where
+module Axiomatization where
 
-import Prelude hiding (and, or)
 import Data.Map.Strict (Map, empty, insert, (!?), (!))
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
@@ -92,8 +91,8 @@ zero = ("$", fromRight M.empty zeroTruthTable)
 one = (".", fromRight M.empty oneTruthTable)
 implies = ("==>", fromRight M.empty impliesTruthTable)
 negation = ("-", fromRight M.empty negationTruthTable)
-and = ("*", fromRight M.empty andTruthTable)
-or = ("+", fromRight M.empty orTruthTable)
+and_ = ("*", fromRight M.empty andTruthTable)
+or_ = ("+", fromRight M.empty orTruthTable)
 ka = ("+*", fromRight M.empty kaTruthTable)
 ki = (">*", fromRight M.empty kiTruthTable)
 ad = ("+-", fromRight M.empty adTruthTable)
@@ -101,7 +100,15 @@ ak = ("*+", fromRight M.empty adTruthTable)
 xor = ("++", fromRight M.empty xorTruthTable)
 d = (">", fromRight M.empty dTruthTable)
 
-connectives = [zero, one, implies, negation, and, or, ka, ki, ad, ak, xor, d]
+dM :: Int -> (String, TruthTable Int)
+dM 2 = d
+dM m = (">" ++ name, fromRight M.empty ttdm)
+    where
+        (name, tt) = dM $ m-1 
+        values = S.fromList [0, 1]
+        ttdm = mkTruthTable $ zip (generateTruthTableArgs (m + 1) values) ((replicate (2^m - 1) 0) ++ [1] ++ (M.elems tt))
+
+connectives = [zero, one, implies, negation, and_, or_, ka, ki, ad, ak, xor, d]
 
 getDefaultConnectives :: [(String, TruthTable Int)]
 getDefaultConnectives = connectives
