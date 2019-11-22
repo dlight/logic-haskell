@@ -12,17 +12,17 @@ type Arity = Int
 data Connective = Connective {
                         symbol :: String,
                         k :: Arity
-                    } | 
-                    DerivedConnective {
-                        symbol :: String,
-                        fmla :: Formula 
-                    }
+                    } 
+--                    DerivedConnective {
+--                        symbol :: String,
+--                        fmla :: Formula 
+--                    }
                     deriving (Show, Typeable, Eq, Ord, Generic, ToJSON, FromJSON, ToJSONKey)
 
 -- | Induces a formula from a connective
 formulaFromConnective :: Connective -> Formula
 formulaFromConnective (Connective s k) = Op s variables
     where variables = map (Var . ("p"++) . show) [1..k]
-formulaFromConnective (DerivedConnective _ fmla) = fmla
+-- formulaFromConnective (DerivedConnective _ fmla) = fmla
 
 

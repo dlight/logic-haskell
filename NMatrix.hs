@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-module NMatrix (NMatrix(..), Values, generateTruthTables, generateTruthTableArgs, valuesFromLists, Interpretation, mkTruthTable, TruthTable, mkInterpretation, V, generateProjections, truthTableArity, superpose) where
+module NMatrix (NMatrix(..), Values, generateTruthTables, generateTruthTableArgs, valuesFromLists, Interpretation, mkTruthTable, TruthTable, mkInterpretation, V, generateProjections, truthTableArity, superpose, mkInterpretation') where
 
 import qualified Data.Set as S
 import qualified Data.Map.Strict as M
@@ -30,7 +30,7 @@ type Interpretation a = M.Map Connective (TruthTable a)
 
 -- | NMatrix by definition
 data NMatrix a = NMatrix {values :: Values a, interpretation :: Interpretation a}
-    deriving (Show, Generic, ToJSON)
+    deriving (Show, Generic, ToJSON, Eq)
 
 -- | Exceptions regarding interpretations
 data InterpretationException = 
@@ -87,6 +87,13 @@ mkInterpretation sig (c@(_,tt):cs)
                                             return $ M.insert connective tt interp
                                 else 
                                     throwM $ UnknownSymbol $ symbol connective
+
+-- | Make an interpretation from a list of truth tables
+mkInterpretation' :: (MonadThrow m, Show a, Ord a) => [(Symbol, TruthTable a)] -> m (Interpretation a)
+mkInterpretation' []            = return M.empty
+mkInterpretation' (c@(_,tt):cs) = do
+    connective <- connectiveFromTruthTable c
+    M.insert connective tt <$> mkInterpretation' cs
 
 truthTableArity :: (Show a, Ord a) => TruthTable a -> Int
 truthTableArity tt = length firstArgEntry

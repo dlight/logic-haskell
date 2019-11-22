@@ -4,6 +4,7 @@ module Axiomatization where
 import Data.Map.Strict (Map, empty, insert, (!?), (!))
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
+import qualified Data.List as L
 import Data.Either
 import Data.Maybe
 import Logic
@@ -14,6 +15,12 @@ import Control.Exception.Safe (Exception, MonadThrow, throwM, SomeException)
 zeroTruthTable = mkTruthTable [([], 0)] :: Either SomeException (TruthTable Int)
 
 oneTruthTable = mkTruthTable [([], 1)] :: Either SomeException (TruthTable Int)
+
+zeroIdentityTruthTable = mkTruthTable [([0], 0),
+                                       ([1], 0)] :: Either SomeException (TruthTable Int)
+
+oneIdentityTruthTable = mkTruthTable [([0], 1),
+                                      ([1], 1)] :: Either SomeException (TruthTable Int)
 
 negationTruthTable = mkTruthTable [([0], 1),
                                    ([1], 0)] :: Either SomeException (TruthTable Int)
@@ -89,6 +96,8 @@ dTruthTable = mkTruthTable [([0, 0, 0], 0),
 
 zero = ("$", fromRight M.empty zeroTruthTable)
 one = (".", fromRight M.empty oneTruthTable)
+zeroIdentity = ("$", fromRight M.empty zeroIdentityTruthTable)
+oneIdentity = (".", fromRight M.empty oneIdentityTruthTable)
 implies = ("==>", fromRight M.empty impliesTruthTable)
 negation = ("-", fromRight M.empty negationTruthTable)
 and_ = ("*", fromRight M.empty andTruthTable)
@@ -100,18 +109,22 @@ ak = ("*+", fromRight M.empty adTruthTable)
 xor = ("++", fromRight M.empty xorTruthTable)
 d = (">", fromRight M.empty dTruthTable)
 
-dM :: Int -> (String, TruthTable Int)
-dM 2 = d
-dM m = (">" ++ name, fromRight M.empty ttdm)
+dm :: Int -> (String, TruthTable Int)
+dm 2 = d
+dm m = (">" ++ name, fromRight M.empty ttdm)
     where
-        (name, tt) = dM $ m-1 
+        (name, tt) = dm $ m-1 
         values = S.fromList [0, 1]
         ttdm = mkTruthTable $ zip (generateTruthTableArgs (m + 1) values) ((replicate (2^m - 1) 0) ++ [1] ++ (M.elems tt))
 
-connectives = [zero, one, implies, negation, and_, or_, ka, ki, ad, ak, xor, d]
+userConnectives = [zero, one, implies, negation, and_, or_, ka, ki, ad, ak, xor, d]
+systemConnectives = [zeroIdentity, oneIdentity, implies, negation, and_, or_, ka, ki, ad, ak, xor, d]
 
-getDefaultConnectives :: [(String, TruthTable Int)]
-getDefaultConnectives = connectives
+getUserConnectives :: [(String, TruthTable Int)]
+getUserConnectives = userConnectives
+
+getSystemConnectives :: [(String, TruthTable Int)]
+getSystemConnectives = systemConnectives ++ map dm [2..]
 
 -- R4 Axiomatization - 2(\lnot)
 r4_1 = read "{P} | -(-(P))" :: Consequence
@@ -356,42 +369,164 @@ d3Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList d3Axiomati
 
 -- D_1 Axiomatization - 2(d, +_3)
 d1_0 = read "{>(P, Q, ++(R, S, T))} | ++(>(P, Q, R), >(P, Q, S), >(P, Q, T))" :: Consequence
-d1_1 = read "{++(P, Q, >(R, S, T))} | >(++(P, Q, R), ++(P, Q, S), ++(P, Q, T))" :: Consequence
+d1_1 = read "{++(>(P, Q, R), >(P, Q, S), >(P, Q, T))} | >(P, Q, ++(R, S, T))" :: Consequence
+d1_2 = read "{++(P, Q, >(R, S, T))} | >(++(P, Q, R), ++(P, Q, S), ++(P, Q, T))" :: Consequence
+d1_3 = read "{>(++(P, Q, R), ++(P, Q, S), ++(P, Q, T))} | ++(P, Q, >(R, S, T))" :: Consequence
+d1_4 = read "{++(A, B, >(P, Q, ++(R, S, T)))} | ++(A, B, ++(>(P, Q, R), >(P, Q, S), >(P, Q, T)))" :: Consequence
+d1_5 = read "{++(A, B, ++(>(P, Q, R), >(P, Q, S), >(P, Q, T)))} | ++(A, B, >(P, Q, ++(R, S, T)))" :: Consequence
+d1_6 = read "{>(A, B, ++(P, Q, >(R, S, T)))} | >(A, B, >(++(P, Q, R), ++(P, Q, S), ++(P, Q, T)))" :: Consequence
+d1_7 = read "{>(A, B, >(++(P, Q, R), ++(P, Q, S), ++(P, Q, T)))} | >(A, B, ++(P, Q, >(R, S, T)))" :: Consequence
 
-d1Axiomatization = d2Axiomatization ++ l4Axiomatization ++ [d1_0, d1_1]
+d1Axiomatization = d2Axiomatization ++ l4Axiomatization ++ [d1_0, d1_1, d1_2, d1_3, d1_4, d1_5, d1_6, d1_7]
 d1Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList d1Axiomatization)
 
--- TODO: Implement!
-getAxiomatization :: Signature -> [Consequence]
-getAxiomatization signature
-    | signature == r4Signature = r4Axiomatization -- 2(\lnot)
-    | signature == r6Signature = r6Axiomatization -- 2(1)
-    | signature == r8Signature = r8Axiomatization -- 2(0)
-    | signature == r11Signature = r11Axiomatization -- 2(0,1)
-    | signature == r13Signature = r13Axiomatization -- 2(\lnot,0)
-    | signature == s2Signature = s2Axiomatization -- 2(v)
-    | signature == s4Signature = s4Axiomatization -- 2(v,1)
-    | signature == s5Signature = s5Axiomatization -- 2(v,0)
-    | signature == s6Signature = s6Axiomatization -- 2(v,0,1)
-    | signature == p2Signature = p2Axiomatization -- 2(^)
-    | signature == p4Signature = p4Axiomatization -- 2(^,0)
-    | signature == p5Signature = p5Axiomatization -- 2(^,1)
-    | signature == p6Signature = p6Axiomatization -- 2(^,0,1)
-    | signature == l4Signature = l4Axiomatization -- 2(+_3)
-    | signature == l2Signature = l2Axiomatization -- 2(+_3,1)
-    | signature == l3Signature = l3Axiomatization -- 2(+_3,0)
-    | signature == l5Signature = l5Axiomatization -- 2(+_3,\lnot)
-    | signature == l1Signature = l1Axiomatization -- 2(+_3,0,1)
-    | signature == f6Signature = f6Axiomatization -- 2(ka)
-    | signature == f5Signature = f5Axiomatization -- 2(ki)
-    | signature == f7Signature = f7Axiomatization -- 2(ka,0)
-    | signature == f8Signature = f8Axiomatization -- 2(ki,0)
-    | signature == f1Signature = f1Axiomatization -- 2(ad)
-    | signature == f4Signature = f4Axiomatization -- 2(ad,1)
-    | signature == f2Signature = f2Axiomatization -- 2(ak)
-    | signature == f3Signature = f3Axiomatization -- 2(ak,1)
-    | signature == d2Signature = d2Axiomatization -- 2(d)
-    | signature == d3Signature = d3Axiomatization -- 2(d,\lnot)
-    -- | signature == d1Signature = d1Axiomatization -- 2(d,+_3)
-    | signature == a4Signature = a4Axiomatization -- 2(v,^)
-    | otherwise                = []
+-- C_4 Axiomatization - 2(ki, v)
+c4_0 = read "{>*(P, Q, +(A, B))} | >*(P, Q, >*(+(A, B), >*(+(A, B), A, R), >*(+(A, B), >*(+(A, B), B, R), R)))" :: Consequence
+c4_1 = read "{>*(P, Q, A)} | >*(P, Q, +(A, B))" :: Consequence
+c4_2 = read "{>*(P, Q, B)} | >*(P, Q, +(A, B))" :: Consequence
+
+c4Axiomatization = f5Axiomatization ++ [c4_0, c4_1, c4_2]
+c4Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList c4Axiomatization)
+
+-- C_3 Axiomatization - 2(ki, v, 0)
+c3Axiomatization = c4Axiomatization ++ [f8_0]
+c3Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList c3Axiomatization)
+
+-- C_2 Axiomatization - 2(ki, v, 1)
+c2Axiomatization = c4Axiomatization ++ [r6_1]
+c2Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList c2Axiomatization)
+
+-- C_1 Axiomatization - 2(ki, v, 0, 1)
+c1Axiomatization = c3Axiomatization ++ [r6_1]
+c1Signature = fromRight M.empty $ sigmaFromConseqRelation (S.fromList c1Axiomatization)
+
+comb :: Int -> [a] -> [[a]]
+comb 0 _      = [[]]
+comb _ []     = []
+comb m (x:xs) = map (x:) (comb (m-1) xs) ++ comb m xs
+
+alphabet = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O"]
+
+clausulesDM :: Int -> [[String]]
+clausulesDM m = comb m $ take (m + 1) alphabet
+
+dmFormula :: Int -> String
+dmFormula m = replicate (m - 1) '>' ++ "(" ++ (foldr1 (++) $ L.intersperse ", " $ take (m + 1) alphabet) ++ ")" 
+
+lorToAk :: [String] -> String
+lorToAk (c:d:[]) = fst ak ++ "(" ++ c ++ ", " ++ d ++ ", " ++ d ++ ")"
+lorToAk (c:cs) = fst ak ++ "(" ++  c ++ ", " ++ aux ++ ", " ++ aux ++ ")"
+    where aux = lorToAk cs
+
+f2ExpansionAxiomatization :: Int -> [Consequence]
+f2ExpansionAxiomatization m = f2Axiomatization ++ (f2ExpansionAxiomatization0 m):[f2ExpansionAxiomatizationK m k | k <- [1..clausulesLength]]
+    where clausulesLength = length $ clausulesDM m
+
+f2ExpansionAxiomatization0 :: Int -> Consequence
+f2ExpansionAxiomatization0 m = read $ "{" ++ premisse ++ "} | " ++ conclusion :: Consequence
+    where
+        clausules = clausulesDM m
+        premisse = foldr1 (++) $ L.intersperse ", " $ map lorToAk ["S":clausule | clausule <- clausules]
+        conclusion = lorToAk ["S", dmFormula m]
+
+f2ExpansionAxiomatizationK :: Int -> Int -> Consequence
+f2ExpansionAxiomatizationK m k = read $ "{" ++ premisse ++ "} | " ++ conclusion :: Consequence
+    where
+        clausule = clausulesDM m !! (k -1)
+        premisse = lorToAk ["S", dmFormula m]
+        conclusion = lorToAk ("S":clausule)
+
+f3ExpansionAxiomatization :: Int -> [Consequence]
+f3ExpansionAxiomatization = (:) r6_1 . f2ExpansionAxiomatization
+
+lorToAd :: [String] -> String
+lorToAd (a:b:[]) = fst ad ++ "(" ++ a ++ ", " ++ b ++ ", " ++ a ++ ")"
+lorToAd (a:cs) = fst ad ++ "(" ++ a ++ ", " ++ aux ++ ", " ++ a ++ ")"
+    where aux = lorToAd cs
+
+adExpansionAux :: String -> String -> [String] -> String
+adExpansionAux p q (a:[]) = fst ad ++ "(" ++ p ++ ", " ++ a ++ ", " ++ q ++ ")"
+adExpansionAux p q (a:cs) = fst ad ++ "(" ++ p ++ ", " ++ a ++ ", " ++ aux ++ ")"
+    where aux = adExpansionAux p q cs
+
+f1ExpansionAxiomatization :: Int -> [Consequence]
+f1ExpansionAxiomatization m = f1Axiomatization ++ (f1ExpansionAxiomatization0 m):[f1ExpansionAxiomatizationK m k | k <- [1..clausulesLength]]
+    where clausulesLength = length $ clausulesDM m
+
+f1ExpansionAxiomatization0 :: Int -> Consequence
+f1ExpansionAxiomatization0 m = read $ "{" ++ premisse ++ "} | " ++ conclusion :: Consequence
+    where
+        (firstClausule:clausules) = clausulesDM m
+        premisse = fst ad ++ "(" ++ "T," ++ "S," ++ lorToAd firstClausule ++ ")"
+        conclusion = fst ad ++ "(" ++ "T," ++ "S," ++ adExpansionAux (lorToAd firstClausule) (dmFormula m) (map lorToAd clausules) ++ ")"
+
+f1ExpansionAxiomatizationK :: Int -> Int -> Consequence
+f1ExpansionAxiomatizationK m k = read $ "{" ++ premisse ++ "} | " ++ conclusion :: Consequence
+    where
+        clausule = clausulesDM m !! (k - 1)
+        premisse = fst ad ++ "(" ++ "T," ++ "S," ++ dmFormula m ++ ")"
+        conclusion = fst ad ++ "(" ++ "T," ++ "S," ++ lorToAd clausule ++ ")"
+
+f4ExpansionAxiomatization :: Int -> [Consequence]
+f4ExpansionAxiomatization = (:) r6_1 . f1ExpansionAxiomatization
+
+landToKi :: [String] -> String
+landToKi (a:b:[]) = fst ki ++ "(" ++ a ++ ", " ++ a ++ ", " ++ b ++ ")"
+landToKi (a:cs) = fst ki ++ "(" ++ a ++ ", " ++ a ++ ", " ++ aux ++ ")"
+    where aux = landToKi cs
+
+kiExpansionAux :: String -> String -> [String] -> String
+kiExpansionAux q r (a:[]) = fst ki ++ "(" ++ q ++ ", " ++ (fst ki ++ "(" ++ q ++ ", " ++ a ++ ", " ++ r ++ ")") ++ ", " ++ r ++ ")"
+kiExpansionAux q r (a:cs) = fst ki ++ "(" ++ q ++ ", " ++ (fst ki ++ "(" ++ q ++ ", " ++ a ++ ", " ++ r ++ ")") ++ ", " ++ aux ++ ")"
+    where aux = kiExpansionAux q r cs
+
+f5ExpansionAxiomatization :: Int -> [Consequence]
+f5ExpansionAxiomatization m = f5Axiomatization ++ (f5ExpansionAxiomatization0 m):[f5ExpansionAxiomatizationK m k | k <- [1..clausulesLength]]
+    where clausulesLength = length $ clausulesDM m
+
+f5ExpansionAxiomatization0 :: Int -> Consequence
+f5ExpansionAxiomatization0 m = read $ "{" ++ premisse ++ "} | " ++ conclusion :: Consequence
+    where
+        premisse = fst ki ++ "(" ++ "T," ++ "S," ++ dmFormula m ++ ")"
+        conclusion = fst ki ++ "(" ++ "T," ++ "S," ++ kiExpansionAux (dmFormula m) "R" (map landToKi $ clausulesDM m) ++ ")"
+
+f5ExpansionAxiomatizationK :: Int -> Int -> Consequence
+f5ExpansionAxiomatizationK m k = read $ "{" ++ premisse ++ "} | " ++ conclusion :: Consequence
+    where
+        clausule = clausulesDM m !! (k - 1)
+        premisse = fst ki ++ "(" ++ "T," ++ "S," ++ landToKi clausule ++ ")"
+        conclusion = fst ki ++ "(" ++ "T," ++ "S," ++ dmFormula m ++ ")"
+
+f8ExpansionAxiomatization :: Int -> [Consequence]
+f8ExpansionAxiomatization = (:) f8_0 . f5ExpansionAxiomatization
+
+
+landToKa :: [String] -> String
+landToKa (a:b:[]) = fst ka ++ "(" ++ a ++ ", " ++ b ++ ", " ++ b ++ ")"
+landToKa (a:cs) = fst ka ++ "(" ++ a ++ ", " ++ aux ++ ", " ++ aux ++ ")"
+    where aux = landToKa cs
+
+kaExpansionAux :: String -> [String] -> String
+kaExpansionAux q (a:b:[]) = fst ka ++ "(" ++ q ++ ", " ++ a ++ ", " ++ b ++ ")"
+kaExpansionAux q (a:cs) = fst ka ++ "(" ++ q ++ ", " ++ a ++ ", " ++ aux ++ ")"
+    where aux = kaExpansionAux q cs
+
+f6ExpansionAxiomatization :: Int -> [Consequence]
+f6ExpansionAxiomatization m = f6Axiomatization ++ (f6ExpansionAxiomatization0 m):[f6ExpansionAxiomatizationK m k | k <- [1..clausulesLength]]
+    where clausulesLength = length $ clausulesDM m
+
+f6ExpansionAxiomatization0 :: Int -> Consequence
+f6ExpansionAxiomatization0 m = read $ "{" ++ premisse ++ "} | " ++ conclusion :: Consequence
+    where
+        premisse = fst ka ++ "(" ++ "T," ++ "S," ++ dmFormula m ++ ")"
+        conclusion = fst ka ++ "(" ++ "T," ++ "S," ++ kaExpansionAux (dmFormula m) (map landToKa $ clausulesDM m) ++ ")"
+
+f6ExpansionAxiomatizationK :: Int -> Int -> Consequence
+f6ExpansionAxiomatizationK m k = read $ "{" ++ premisse ++ "} | " ++ conclusion :: Consequence
+    where
+        clausule = clausulesDM m !! (k - 1)
+        premisse = fst ka ++ "(" ++ "T," ++ "S," ++ landToKa clausule ++ ")"
+        conclusion = fst ka ++ "(" ++ "T," ++ "S," ++ dmFormula m ++ ")"
+
+f7ExpansionAxiomatization :: Int -> [Consequence]
+f7ExpansionAxiomatization = (:) f7_0 . f6ExpansionAxiomatization
