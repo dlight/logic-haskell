@@ -30,6 +30,11 @@ impliesTruthTable = mkTruthTable [([0, 0], 1),
                                   ([1, 0], 0),
                                   ([1, 1], 1)] :: Either SomeException (TruthTable Int)
 
+coimpliesTruthTable = mkTruthTable [([0, 0], 0),
+                                    ([0, 1], 1),
+                                    ([1, 0], 0),
+                                    ([1, 1], 0)] :: Either SomeException (TruthTable Int)
+
 andTruthTable = mkTruthTable [([0, 0], 0),
                               ([0, 1], 0),
                               ([1, 0], 0),
@@ -99,6 +104,7 @@ one = (".", fromRight M.empty oneTruthTable)
 zeroIdentity = ("$", fromRight M.empty zeroIdentityTruthTable)
 oneIdentity = (".", fromRight M.empty oneIdentityTruthTable)
 implies = ("==>", fromRight M.empty impliesTruthTable)
+coimplies = ("-<", fromRight M.empty coimpliesTruthTable)
 negation = ("-", fromRight M.empty negationTruthTable)
 and_ = ("*", fromRight M.empty andTruthTable)
 or_ = ("+", fromRight M.empty orTruthTable)
@@ -117,8 +123,8 @@ dm m = (">" ++ name, fromRight M.empty ttdm)
         values = S.fromList [0, 1]
         ttdm = mkTruthTable $ zip (generateTruthTableArgs (m + 1) values) ((replicate (2^m - 1) 0) ++ [1] ++ (M.elems tt))
 
-userConnectives = [zero, one, implies, negation, and_, or_, ka, ki, ad, ak, xor, d]
-systemConnectives = [zeroIdentity, oneIdentity, implies, negation, and_, or_, ka, ki, ad, ak, xor, d]
+userConnectives = [zero, one, implies, coimplies, negation, and_, or_, ka, ki, ad, ak, xor, d]
+systemConnectives = [zeroIdentity, oneIdentity, implies, coimplies, negation, and_, or_, ka, ki, ad, ak, xor, d]
 
 getUserConnectives :: [(String, TruthTable Int)]
 getUserConnectives = userConnectives

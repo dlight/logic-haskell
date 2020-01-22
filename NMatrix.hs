@@ -30,7 +30,7 @@ type Interpretation a = M.Map Connective (TruthTable a)
 
 -- | NMatrix by definition
 data NMatrix a = NMatrix {values :: Values a, interpretation :: Interpretation a}
-    deriving (Show, Generic, ToJSON, Eq)
+    deriving (Show, Generic, FromJSONKey, ToJSONKey, ToJSON, FromJSON, Eq)
 
 -- | Exceptions regarding interpretations
 data InterpretationException = 

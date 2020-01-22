@@ -17,7 +17,7 @@ data Connective = Connective {
 --                        symbol :: String,
 --                        fmla :: Formula 
 --                    }
-                    deriving (Show, Typeable, Eq, Ord, Generic, ToJSON, FromJSON, ToJSONKey)
+                    deriving (Show, Typeable, Eq, Ord, Generic, ToJSON, FromJSON, ToJSONKey, FromJSONKey)
 
 -- | Induces a formula from a connective
 formulaFromConnective :: Connective -> Formula
