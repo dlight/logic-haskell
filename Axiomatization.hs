@@ -111,7 +111,7 @@ or_ = ("+", fromRight M.empty orTruthTable)
 ka = ("+*", fromRight M.empty kaTruthTable)
 ki = (">*", fromRight M.empty kiTruthTable)
 ad = ("+-", fromRight M.empty adTruthTable)
-ak = ("*+", fromRight M.empty adTruthTable)
+ak = ("*+", fromRight M.empty akTruthTable)
 xor = ("++", fromRight M.empty xorTruthTable)
 d = (">", fromRight M.empty dTruthTable)
 
